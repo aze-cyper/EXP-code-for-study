@@ -1,0 +1,124 @@
+#include<iostream>
+#include<stack>
+using namespace std;
+struct Node{
+    int data;
+    Node * left;
+    Node * right;
+};
+Node * create_node(int value){
+    Node * newnode = new Node;
+    newnode -> data = value;
+    newnode -> left = nullptr;
+    newnode -> right = nullptr;
+    return newnode;
+}
+string display_tree(Node * root){
+    if(root == nullptr){
+        return "";
+    }
+    string result = to_string(root -> data);
+    if(root -> left != nullptr || root -> right != nullptr){
+        result += "(";
+        result += display_tree(root -> left);
+        result += ",";
+        result += ")";
+        result += display_tree(root->right);
+    }
+    return result;
+}
+void pre_order(Node * root){
+    if(root == nullptr){
+        return;
+    }
+    cout << root -> data;
+    pre_order(root -> left);
+    pre_order(root -> right);
+}
+void mid_order(Node * root){
+    if(root == nullptr){
+        return;
+    }
+    mid_order(root -> left);
+    cout << root -> data;
+    mid_order(root -> right);
+}
+void last_order(Node * root){
+    if(root == nullptr){
+        return;
+    }
+    last_order(root -> left);
+    last_order(root -> right);
+    cout << root -> data;
+}
+void pre(Node * root){
+    if(root == nullptr){
+        return;
+    }
+    stack <Node *> s;
+    s.push(root);
+    while(!s.empty()){
+        Node * current = s.top();
+        cout << current -> data
+        s.pop();
+        if(root -> right != nullptr){
+            s.push(root -> right);
+        }
+        if(root -> left != nullptr){
+            s.push(root -> left);
+        }
+    }
+}
+void mid(Node * root){
+    if(root == nullptr){
+        return;
+    }
+    stack <Node *> s;
+    Node * current = root;
+    while (current != nullptr || !st.empty()) {
+        while (current != nullptr) {
+            st.push(current);
+            current = current->left;
+        }
+        current = st.top();
+        st.pop();
+        cout << current->data << " ";
+        current = current->right;
+    }
+}
+void post_order_iterative(Node* root) {
+    if (root == nullptr) return;
+    stack<Node*> st1, st2;
+    st1.push(root);
+    while (!st1.empty()) {
+        Node* current = st1.top();
+        st1.pop();
+        st2.push(current); 
+        if (current->left != nullptr) {
+            st1.push(current->left);
+        }
+        if (current->right != nullptr) {
+            st1.push(current->right);
+        }
+    }
+    while (!st2.empty()) {
+        cout << st2.top()->data << " ";
+        st2.pop();
+    }
+}
+void level_order(Node* root) {
+    if (root == nullptr) return; 
+    queue<Node*> q;
+    q.push(root);
+    while (!q.empty()) {
+        Node* current = q.front();
+        q.pop();
+        cout << current->data << " ";
+        if (current->left != nullptr) {
+            q.push(current->left);
+        }
+        if (current->right != nullptr) {
+            q.push(current->right);
+        }
+    }
+}

@@ -1,0 +1,188 @@
+#include<iostream>
+#include<fstream>
+#include<map>
+#include<iomanip>
+#include<queue>
+#include<vector>
+using namespace std;
+string char_to_string(char c){
+    switch(c){
+        case ' ':return "space";break;
+        case '\n':return "newline";break;
+        default : return string(1,c);break;
+    }
+}
+map<char,int> get_frequency(ifstream & file){
+    map<char,int> frequency;
+    if(!file.is_open()){
+        cout << "file not open" << endl;
+        return frequency;
+    }
+    else{
+        char c;
+        int total = 0;
+        while(file.get(c)){
+            frequency[c]++;
+            total++;
+        }
+        for(auto & p : frequency){
+            string result = char_to_string(p.first);
+            cout << result << ' ' <<p.second << ' ';
+            cout << setprecision(3) << (double)p.second/total << endl; 
+        }
+        return frequency;
+    }
+}
+struct node{
+    char ch;
+    int frequency;
+    node * left;
+    node * right;
+};
+//初始化
+node* createnewnode(char c,int f){
+    node * newnode = new node;
+    newnode -> ch = c;
+    newnode -> frequency = f;
+    newnode -> left =  nullptr;
+    newnode -> right = nullptr;
+    return newnode;
+}
+struct compare {
+    bool operator()(node* a, node* b) {
+        return a->frequency > b->frequency;
+    }
+};
+//处理文件后得到的frequency直接作为参数输入此函数，得到root
+node* build_huffmantree(const map<char,int> & frequency){
+    //队列
+    priority_queue<node*,vector<node*>,compare> min;
+    for(auto& p : frequency){
+        char ch = p.first;
+        int f = p.second;
+        node* newnode = createnewnode(p.first,p.second);
+        min.push(newnode);
+    }
+    while(min.size() > 1){
+        node* left = min.top();
+        min.pop();
+        node* right = min.top();
+        min.pop();
+        node* parent = createnewnode('\0',left -> frequency + right -> frequency);
+        parent->left = left;
+        parent->right = right;
+        min.push(parent);
+    }
+    node* root = min.top();
+    min.pop();
+    return root;
+}
+//创建空map，深度优先，利用递推
+void generatecode(node* root,string currentcode,map<char,string>& huffmantree){
+    if(!root){
+        return;
+    }
+    if(!root->left&&!root->right){
+        huffmantree[root->ch] = currentcode;
+    }
+    generatecode(root -> left,currentcode + '0',huffmantree);
+    generatecode(root -> right,currentcode + '1',huffmantree);
+}
+char binary_to_byte(const string& binary) {
+    char byte = 0;
+    for (int i = 0; i < 8; i++) {
+        if (binary[i] == '1') {
+            byte |= (1 << (7 - i)); 
+        }
+    }
+    return byte;
+}
+string byte_to_binary(char byte) {
+    string binary = "";
+    for (int i = 7; i >= 0; i--) {
+        if (byte & (1 << i)) {
+            binary += '1';
+        } else {
+            binary += '0';
+        }
+    }
+    return binary;
+}
+void delete_tree(node * root){
+    if(root == nullptr){return;}
+    delete_tree(root -> left);
+    delete_tree(root -> right);
+    delete root;
+}
+void encodefile(ifstream& inputfile,ofstream& outputfile){
+    inputfile.clear();
+    inputfile.seekg(0, ios::beg);
+    map<char,int> frequency = get_frequency(inputfile);
+    node * root = build_huffmantree(frequency);
+    string currentcode = "";
+    map<char,string> huffmancode;
+    generatecode(root,currentcode,huffmancode);
+    inputfile.clear();
+    inputfile.seekg(0, ios::beg);
+    char c;
+    string result = "";
+    while(inputfile.get(c)){
+        result +=  huffmancode[c];
+    }
+    for(int i = 0;i < result.length();i += 8){
+        string bytestr = result.substr(i,8);
+        if(bytestr.length() < 8){
+            bytestr += string(8 - bytestr.length(),'0');//补零
+        }        
+        char binary = binary_to_byte(bytestr);
+        outputfile.write(&binary,1); 
+    }
+    delete_tree(root);
+} 
+//压缩率
+void evaluate_size(const string& originalfile,const string& binaryfile){
+    ifstream ori(originalfile, ios::binary | ios::ate);
+    size_t ori_size = ori.tellg();
+    ori.close();
+    ifstream bin(binaryfile, ios::binary | ios::ate);
+    size_t bin_size = bin.tellg();
+    bin.close();
+    double rate = (1 - (double)bin_size/ori_size) * 100;
+    cout << ori_size << " "<< bin_size << " " << setprecision(2) <<rate << '%' << endl;    
+}
+void unencodefile(ifstream& encodefile,ofstream& unencodefile,node * root){
+    node* current = root;
+    char byte;
+    string bits = "";
+    while (encodefile.get(byte)) {
+        bits = byte_to_binary(byte);
+        for (char bit : bits) {
+            if (bit == '0') {
+                current = current->left;
+            } else {
+                current = current->right;
+            }
+            if (current -> left == nullptr && current -> right == nullptr) {
+                unencodefile.put(current -> ch);
+                current = root; 
+            }
+        }
+    }
+}
+int main(){
+    /*ifstream text("D:/code/c++/lab2/text.txt");
+    ofstream codetext("D:/code/c++/lab2/encode.txt",ios::binary);
+    get_frequency(text);
+    encodefile(text,codetext);
+    text.close();
+    codetext.close();
+    evaluate_size("D:/code/c++/lab2/text.txt","D:/code/c++/lab2/encode.txt");
+    text.close();
+    codetext.close();*/
+    ifstream codetext("D:/code/c++/lab2/encode.txt",ios::binary);
+    ifstream text("D:/code/c++/lab2/text.txt");
+    ofstream unencodetext("D:/code/c++/lab2/unencode.txt");
+    map<char,int> frequency = get_frequency(text);
+    node * root = build_huffmantree(frequency);    
+    unencodefile(codetext,unencodetext,root);
+}
