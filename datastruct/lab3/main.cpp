@@ -195,10 +195,10 @@ int main(){
     graph[5].push_back(init(7, 7));  // F->H
     graph[6].push_back(init(7, 4));  // G->H
 
-    dijkstra(graph, start, dist_dijkstra, pre_dijkstra);
-    print_dijkstra_result(dist_dijkstra, pre_dijkstra, node, start);
+    //dijkstra(graph, start, dist_dijkstra, pre_dijkstra);
+    //print_dijkstra_result(dist_dijkstra, pre_dijkstra, node, start);
     
-    //floyd(graph,dist_floyd,next_floyd);
-    //print_floyd_result(dist_floyd,next_floyd,node);
+    floyd(graph,dist_floyd,next_floyd);
+    print_floyd_result(dist_floyd,next_floyd,node);
     return 0;
 }

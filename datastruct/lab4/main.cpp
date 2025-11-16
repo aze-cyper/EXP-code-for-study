@@ -1,6 +1,9 @@
 #include<iostream>
 #include<fstream>
 #include<vector>
+#include<chrono>
+#include<random>
+#include<algorithm>
 using namespace std;
 
 class sorted{
@@ -90,6 +93,24 @@ private:
     }
 
 public:
+//随机数据
+    sorted(int size) : count(size) {
+        data.resize(size);
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<> dis(0, 100000);
+        for (int i = 0; i < size; ++i) {
+            data[i] = dis(gen);
+        }
+        isSorted = false;
+    }
+    void resetData(const vector<int>& newData) {
+        data = newData;
+        count = newData.size();
+        isSorted = false;
+    }
+
+    vector<int> getData() const { return data; }
 
     sorted(const string & filename);
     void Merge_sort();
@@ -152,11 +173,55 @@ void sorted::Select_sort(){
 }
 
 int main(){
-    string filename = "D:\\EXP-code-for-study\\datastruct\\lab4\\test2.txt";
-    sorted s1(filename);
-    s1.printData();
-    s1.Merge_sort();
-    s1.printData();
-}
+    vector<int> sizes = {100, 500, 1000, 2000, 5000, 10000, 20000};
+    
+    ofstream outFile("D:\\EXP-code-for-study\\datastruct\\lab4\\sort_times.txt");
+    if (!outFile.is_open()) {
+        cout << "无法打开" << endl;
+        return 1;
+    }
+    outFile << "数据规模,插入排序(ms),选择排序(ms),快速排序(ms),归并排序(ms)" << endl;
 
+    // 对每种数据规模进行测试
+    for (int size : sizes) {
+        cout << "测试数据规模: " << size << endl;
+        
+        sorted sorter(size);
+        vector<int> originalData = sorter.getData();
+        
+        sorter.resetData(originalData);
+        auto start = chrono::high_resolution_clock::now();
+        sorter.Insert_sort();
+        auto end = chrono::high_resolution_clock::now();
+        double insertTime = chrono::duration<double, milli>(end - start).count();
+        
+        sorter.resetData(originalData);
+        start = chrono::high_resolution_clock::now();
+        sorter.Select_sort();
+        end = chrono::high_resolution_clock::now();
+        double selectTime = chrono::duration<double, milli>(end - start).count();
+        
+        sorter.resetData(originalData);
+        start = chrono::high_resolution_clock::now();
+        sorter.Quick_sort();
+        end = chrono::high_resolution_clock::now();
+        double quickTime = chrono::duration<double, milli>(end - start).count();
+        
+        sorter.resetData(originalData);
+        start = chrono::high_resolution_clock::now();
+        sorter.Merge_sort();
+        end = chrono::high_resolution_clock::now();
+        double mergeTime = chrono::duration<double, milli>(end - start).count();
+        
+        outFile << size << "," 
+                << insertTime << "," 
+                << selectTime << "," 
+                << quickTime << "," 
+                << mergeTime << endl;
+    }
+    
+    outFile.close();
+    cout << "保存到 sort_times.txt" << endl;
+    return 0;
+}
 
