@@ -1,3 +1,2 @@
 ﻿  main.cpp
-  glad.c
-LINK : fatal error LNK1104: 无法打开文件“glfw3.lib;opengl32.lib”
+  learnOpenGL.vcxproj -> D:\EXP-code-for-study\OPENGL\learnOpenGL\x64\Debug\learnOpenGL.exe

@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "x64\\Debug\\shader.obj",
+            "outputs": [
+                "x64\\Debug\\shader.h_ACB4395A7A92609F.ifc.dt.module.json",
+                "x64\\Debug\\shader.h_ACB4395A7A92609F.ifc.dt.d.json",
+                "x64\\Debug\\shader.h.ifc"
+            ],
+            "provides": [
+                {
+                    "logical-name": "D:\\HIT\\CG\\Exp1\\Exp1\\shader.h",
+                    "source-path": "d:\\hit\\cg\\exp1\\exp1\\shader.h",
+                    "lookup-method": "absolute"
+                }
+            ],
+            "requires": []
+        }
+    ]
+}
